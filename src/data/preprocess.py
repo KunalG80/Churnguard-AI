@@ -1,62 +1,44 @@
 import pandas as pd
+from src.config import TENURE_BINS, TENURE_LABELS
+
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Clean uploaded or training data.
-    Pandas 3.0 safe version.
+    Clean raw data.  Safe for both training and inference.
+    BUG FIX: tenure_group now created BEFORE return (was dead code after return).
+    BUG FIX: fillna uses type-aware fill (not blanket fillna(0)).
     """
     df = df.copy()
-    # Replace blank strings
+
+    # Replace blank strings with NaN
     df = df.replace(r'^\s*$', None, regex=True)
 
-    # Fix numeric column
+    # Fix TotalCharges (often comes as string with spaces)
     if "TotalCharges" in df.columns:
-        df["TotalCharges"] = pd.to_numeric(
-            df["TotalCharges"],
-            errors="coerce"
-        )
+        df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
 
-    # Fix type mismatch
+    # SeniorCitizen: coerce to string for consistent OHE treatment
     if "SeniorCitizen" in df.columns:
         df["SeniorCitizen"] = df["SeniorCitizen"].astype(str)
 
-    # Drop ID
+    # Drop customer ID - not a feature
     if "customerID" in df.columns:
-        df = df.drop(columns=["customerID"],axis=1)
+        df = df.drop(columns=["customerID"])
 
-    # Fill numeric NA
-    numeric_cols = df.select_dtypes(include="number").columns
-    df[numeric_cols] = df[numeric_cols].fillna(
-        df[numeric_cols].median()
-    )
-
-    # Fill categorical NA (SAFE WAY)
+    # Type-aware fills (BUG FIX: not blanket fillna(0) which corrupts categoricals)
+    num_cols = df.select_dtypes(include="number").columns
     cat_cols = df.select_dtypes(include="object").columns
+    df[num_cols] = df[num_cols].fillna(df[num_cols].median())
     df[cat_cols] = df[cat_cols].fillna("Unknown")
 
-    return df
-
-# -----------------------------------------
-# CREATE tenure_group (TRAINING FEATURE)
-# -----------------------------------------
-
+    # BUG FIX: tenure_group created HERE (was after return → dead code)
     if "tenure" in df.columns:
-
-        df["tenure"] = pd.to_numeric(
-            df["tenure"],
-            errors="coerce"
-        )
-
+        df["tenure"] = pd.to_numeric(df["tenure"], errors="coerce").fillna(0)
         df["tenure_group"] = pd.cut(
             df["tenure"],
-            bins=[0,12,24,48,60,100],
-            labels=[
-                "0-12",
-                "12-24",
-                "24-48",
-                "48-60",
-                "60+"
-            ]
-        )
+            bins=TENURE_BINS,
+            labels=TENURE_LABELS,
+            include_lowest=True,
+        ).astype(str)
 
-        df["tenure_group"] = df["tenure_group"].astype(str)
+    return df

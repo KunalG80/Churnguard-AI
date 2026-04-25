@@ -1,0 +1,44 @@
+# ------------------------
+# Python
+# ------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# ------------------------
+# Virtual Env
+# ------------------------
+.venv/
+env/
+venv/
+
+# ------------------------
+# Data Files
+# ------------------------
+data/raw/
+*.csv
+
+# allow only schema alignment file if needed
+!data/processed/processed.csv
+
+# ------------------------
+# Model Artifacts (optional)
+# ------------------------
+models/*.joblib
+models/*.pkl
+
+# ------------------------
+# Generated Reports
+# ------------------------
+reports/
+*.pdf
+*.pptx
+*.png
+
+# ------------------------
+# OS Files
+# ------------------------
+.DS_Store
+Thumbs.db

@@ -1,33 +1,18 @@
 from datetime import datetime
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 
-pdfmetrics.registerFont(
-    TTFont(
-        "DejaVu",
-        "assets/fonts/DejaVuSans.ttf"
-    )
-)
 
-def generate_churn_report(
-    summary,
-    seg_df,
-    total_budget,
-    retention_cost
-):
+def generate_churn_report(summary: dict, seg_df, total_budget: float, retention_cost: float) -> str:
+    return f"""
+ChurnGuard AI – CFO Retention Strategy Memo
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}
 
-    report = f"""
-    ChurnGuard AI – CFO Retention Strategy Memo
+Total Retention Budget: ₹{total_budget:,}
+Retention Cost / Customer: ₹{retention_cost:,}
 
-    Total Retention Budget: ₹{total_budget}
-    Retention Cost per Customer: ₹{retention_cost}
+Revenue at Risk:    ₹{summary.get('Revenue at Risk', 0):,.0f}
+Medium Risk ROI:    ₹{summary.get('Medium Risk ROI', 0):,.2f}
+High Risk ROI:      ₹{summary.get('High Risk ROI', 0):,.2f}
 
-    Revenue at Risk: ₹{summary['Revenue at Risk']:,.0f}
-    Medium Risk ROI: ₹{summary['Medium Risk ROI']:,.0f}
-    High Risk ROI: ₹{summary['High Risk ROI']:,.0f}
-
-    Segment Strategy:
-    {seg_df.to_string()}
-    """
-
-    return report
+Segment Strategy:
+{seg_df.to_string() if seg_df is not None else 'N/A'}
+""".strip()
