@@ -1,1 +1,1 @@
-# Lazy exports - import directly from submodules to avoid cascade import failures
+# Lazy package — import directly from submodules to avoid cascade failures

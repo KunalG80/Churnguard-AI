@@ -44,7 +44,12 @@ XGB_PARAMS = {
     "gamma":             0.1,
     "reg_alpha":         0.1,
     "reg_lambda":        1.0,
-    "eval_metric":       "logloss",
-    "random_state":      RANDOM_STATE,
-    "use_label_encoder": False,
+    "eval_metric":  "logloss",
+    "random_state": RANDOM_STATE,
+    # use_label_encoder removed — deprecated in XGBoost ≥ 1.6, causes UserWarning
 }
+
+# ── Report output paths ───────────────────────────────────────────────────────
+PDF_PATH    = REPORTS_DIR / "churnguard_report.pdf"
+PPT_PATH    = REPORTS_DIR / "churnguard_report.pptx"
+BUNDLE_PATH = REPORTS_DIR / "Retention_Strategy_Pack.zip"

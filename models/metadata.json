@@ -1,0 +1,17 @@
+{
+  "trained_at": "2026-04-27 08:43:35.977114",
+  "model": "XGBoostClassifier",
+  "roc_auc": 0.8406,
+  "optimal_threshold": 0.556,
+  "best_f1": 0.6378,
+  "confusion_matrix": [
+    [
+      772,
+      263
+    ],
+    [
+      82,
+      292
+    ]
+  ]
+}

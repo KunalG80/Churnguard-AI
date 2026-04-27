@@ -1,31 +1,39 @@
+"""
+ROI vs threshold sweep.
+Previously orphaned (never called) — now wired into app.py as an
+interactive chart helping users pick the optimal decision threshold.
+"""
+import numpy as np
+import pandas as pd
+
+
 def roi_vs_threshold(
-    df,
-    retention_cost,
-    retention_success_rate,
-    months_lost
-):
-
-    results = []
-
-    for t in [i/10 for i in range(1,9)]:
-
-        subset = df[df["Churn_Probability"] > t]
-
+    df: pd.DataFrame,
+    retention_cost: float,
+    success_rate: float,
+    months_lost: int,
+) -> pd.DataFrame:
+    """
+    Sweep decision thresholds 0.1 → 0.9 and compute net ROI at each.
+    Returns a DataFrame suitable for Plotly line chart.
+    """
+    rows = []
+    for t in np.arange(0.1, 0.95, 0.05):
+        subset = df[df["Churn_Probability"] >= t]
         if subset.empty:
             continue
-
-        loss = subset["MonthlyCharges"].sum() * months_lost
-        saved = (
-            subset["MonthlyCharges"].sum()
-            * retention_success_rate
-            * months_lost
-        )
-
-        net = saved - (len(subset) * retention_cost)
-
-        results.append({
-            "threshold": t,
-            "net_roi": net
+        n         = len(subset)
+        loss      = subset["MonthlyCharges"].sum() * months_lost
+        saved     = loss * success_rate
+        spend     = n * retention_cost
+        net       = saved - spend
+        precision = n / max(len(df), 1)
+        rows.append({
+            "Threshold":         round(float(t), 2),
+            "Customers_Targeted": n,
+            "Net_ROI":           round(net, 0),
+            "Retention_Spend":   round(spend, 0),
+            "Revenue_Saved":     round(saved, 0),
+            "Targeting_Rate_%":  round(precision * 100, 1),
         })
-
-    return results
+    return pd.DataFrame(rows)

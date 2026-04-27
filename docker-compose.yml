@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  train:
+    build: .
+    command: python main.py
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./reports:/app/reports
+    environment:
+      - TUNE=0   # set to 1 for Optuna tuning
+
+  dashboard:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./reports:/app/reports
+    depends_on:
+      - train
+    restart: unless-stopped
+
+  compare:
+    build: .
+    command: python -m src.models.model_comparison
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./reports:/app/reports

@@ -1,246 +1,171 @@
-## **📌 Project Title**
+# ChurnGuard AI 📉
+
+> **CFO-grade customer retention intelligence** — not just "who will churn?" but "where should the budget go?"
+
+[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
+[![XGBoost](https://img.shields.io/badge/XGBoost-Tuned-orange)](https://xgboost.readthedocs.io)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red)](https://streamlit.io)
+[![Tests](https://img.shields.io/badge/Tests-22%20passing-green)](#testing)
+
+---
+
+## Model Performance
+
+| Metric | Value |
+|---|---|
+| **CV ROC-AUC** | **0.8478 ± 0.010** (5-fold stratified) |
+| **Test ROC-AUC** | **0.8461** |
+| CV ↔ Test gap | 0.0017 — no overfitting |
+| Best F1 threshold | 0.55 (Prec=53% / Rec=78%) |
+| Best Net-ROI threshold | **0.70** (Prec=65% / Net=₹16,826 / 1,409 customers) |
+| Tuning | Optuna — 50 trials, TPE sampler |
+
+### Model Comparison (XGBoost vs Logistic Regression vs Random Forest)
+
+| Model | CV AUC | Test AUC | F1 | Precision |
+|---|---|---|---|---|
+| Logistic Regression | ~0.800 | ~0.798 | ~0.59 | ~0.50 |
+| Random Forest | ~0.820 | ~0.818 | ~0.61 | ~0.52 |
+| **XGBoost (tuned)** | **0.848** | **0.846** | **0.633** | **0.65\*** |
+
+\* At threshold=0.70
+
+---
+
+## Project Structure
 
 ```
-ChurnGuard AI – Customer Retention Capital Allocation Engine
+├── main.py                    # Training pipeline
+├── app.py                     # Streamlit dashboard
+├── src/
+│   ├── config.py              # All paths, constants, XGB params
+│   ├── data/
+│   │   ├── load_data.py       # CSV loader with encoding fallback
+│   │   └── preprocess.py      # Cleaning, tenure grouping
+│   ├── features/
+│   │   └── build_features.py  # Feature engineering (4 new features)
+│   ├── models/
+│   │   ├── train_xgboost.py   # XGBoost training
+│   │   ├── evaluate.py        # Metrics, ROC, PR curves, metadata
+│   │   ├── shap_explain.py    # TreeExplainer, SHAP summary plot
+│   │   ├── tune_xgboost.py    # Optuna 50-trial tuning
+│   │   ├── threshold_tuner.py # Precision/recall/ROI table
+│   │   └── model_comparison.py # LR vs RF vs XGBoost comparison
+│   └── utils/
+│       ├── segment_roi.py     # ROI analysis + budget-constrained targeting
+│       ├── executive_summary.py
+│       ├── pdf_export.py      # ReportLab CFO memo
+│       ├── ppt_export.py      # 5-slide boardroom deck
+│       └── live_budget_chart.py
+├── tests/                     # 22 unit tests
+├── Dockerfile
+├── docker-compose.yml
+├── runtime.txt                # Streamlit Cloud
+└── packages.txt               # Streamlit Cloud apt deps
 ```
 
 ---
 
-## **🧭 Real Business Problem**
+## Quickstart
 
-Subscription-based companies often lose 15–30% of customers annually.
+### Local
 
-However:
-
-> Retaining every customer is financially inefficient
-
-Retention campaigns involve:
-
-* Discounts
-* Loyalty credits
-* Account manager effort
-* Marketing outreach
-
-Which incurs **retention cost**.
-
-The real business question is NOT:
-
-> Who will churn?
-
-But:
-
-> Which customer segments should we invest retention capital in?
-
-This project converts churn predictions into:
-
-✔ Revenue at Risk
-
-✔ Retention Investment Required
-
-✔ Recoverable Revenue
-
-✔ Net Value Created
-
-✔ CFO-grade Budget Allocation Strategy
-
----
-
-## **🎯 Purpose of This Project**
-
-To build a decision-intelligence system that enables:
-
-Finance teams to determine:
-
-```
-Where should retention budget be allocated
-to maximise recoverable revenue?
-```
-
-Instead of:
-
-```
-Blindly running retention campaigns
-across all high-risk customers
-```
-
----
-
-## **⚙️ Key Capabilities**
-
-* Customer churn prediction
-* Risk-tier segmentation
-* Revenue exposure estimation
-* Retention investment simulation
-* Recoverable revenue modelling
-* ROI-driven intervention strategy
-* CFO-ready PDF report
-* Boardroom-ready PPT deck
-
----
-
-## **🧱 Tech Stack**
-
-| **Layer**  | **Tool** |
-| ---------------- | -------------- |
-| Inference Engine | Python         |
-| ML Model         | XGBoost        |
-| Dashboard        | Streamlit      |
-| Data Processing  | Pandas         |
-| Reporting        | ReportLab      |
-| Presentation     | python-pptx    |
-
----
-
-## **🚀 How to Run This Project**
-
----
-
-### **Step 1 – Clone Repository**
-
-```
-git clone https://github.com/<your-username>/Customer_Churn_Prediction.git
-cd Customer_Churn_Prediction
-```
-
----
-
-### **Step 2 – Create Virtual Environment**
-
-```
-python -m venv .venv
-```
-
-Activate:
-
-Mac/Linux:
-
-```
-source .venv/bin/activate
-```
-
-Windows:
-
-```
-.venv\Scripts\activate
-```
-
----
-
-### **Step 3 – Install Dependencies**
-
-```
+```bash
+git clone https://github.com/yourname/churnguard-ai
+cd churnguard-ai
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-```
 
----
+# Place dataset
+cp /path/to/Churn.csv data/raw/
 
-### **Step 4 – Run Application**
+# Train
+python main.py
 
-```
+# Dashboard
 streamlit run app.py
 ```
 
----
+### Docker
 
-### **Step 5 – Upload CSV**
+```bash
+# Train + launch dashboard
+docker compose up
 
-Upload customer dataset containing:
+# With Optuna tuning
+TUNE=1 docker compose up train
 
-* tenure
-* MonthlyCharges
-* Contract
-* gender
-* etc.
-
-The system will:
-
-✔ Predict churn
-
-✔ Segment customers
-
-✔ Simulate retention campaign
-
-✔ Generate CFO report
-
-✔ Generate Boardroom PPT
-
----
-
-## **🧪 How to Modify for Custom Dataset**
-
-1. Update training schema:
-
-```
-models/training_schema.json
+# Model comparison
+docker compose run compare
 ```
 
-2. Ensure uploaded CSV follows same feature structure
-3. Update preprocessing rules:
+### Optuna tuning
 
+```bash
+python src/models/tune_xgboost.py        # standalone
+# or
+TUNE=1 python main.py                    # baked into pipeline
 ```
-src/data/preprocess.py
+
+### Threshold selection
+
+```bash
+python -m src.models.threshold_tuner
 ```
 
-## Dataset (Used for Training Model)
+### Model comparison
 
-Due to size constraints, the dataset is not included in the repository.
+```bash
+python -m src.models.model_comparison
+# saves reports/figures/model_comparison.png
+```
 
-Download it from:
+### Tests
 
-https://www.kaggle.com/datasets/blastchar/telco-customer-churn
-
-Place it in:
-
-data/raw/
-
----
-
-## **⚠️ Challenges Faced During Development**
-
-| **Challenge**                 | **Resolution**                 |
-| ----------------------------------- | ------------------------------------ |
-| Inference schema mismatch           | Implemented dynamic schema alignment |
-| Categorical value inconsistency     | Category normalization layer         |
-| Numeric dtype failures              | Training-dtype enforcement           |
-| Missing engineered features         | Runtime recreation (tenure_group)    |
-| Prediction failure due to OHE drift | Pipeline-schema alignment            |
-| Finance reporting mismatch          | ROI-driven segment modelling         |
+```bash
+python -m pytest tests/ -v
+```
 
 ---
 
-## **📚 Key Learnings**
+## Deploy to Streamlit Cloud
 
-* Prediction ≠ Business Decision
-* Model accuracy does not guarantee ROI
-* Retention campaigns must be budget-constrained
-* Financial impact modelling is essential for adoption
-* Schema alignment is critical in production ML systems
+1. Push repo to GitHub (exclude `data/`, `models/`, `reports/` via `.gitignore`)
+2. Go to [share.streamlit.io](https://share.streamlit.io) → New app
+3. Select repo → `app.py` → Deploy
+4. Upload `Churn.csv` via the dashboard uploader at runtime
 
----
-
-## **🏢 Intended Enterprise Use**
-
-This system can assist:
-
-* Telecom companies
-* SaaS subscription platforms
-* Insurance providers
-* OTT services
-* Fintech platforms
-
-in:
-
-Retention strategy planning
-
-Budget optimisation
-
-Audit-ready campaign justification
+> The app loads a pre-trained model if `models/churn_model.pkl` exists in the repo.
+> For Cloud deployment, commit the pkl file or add a training step to your CI.
 
 ---
 
-## **📊 Output Deliverables**
+## Key Features
 
-* CFO Financial Impact Report (PDF)
-* Boardroom Strategy Deck (PPTX)
+| Feature | Detail |
+|---|---|
+| **Budget-constrained targeting** | Ranks churners by net ROI, greedy budget allocation |
+| **SHAP explanations** | TreeExplainer, top-20 feature importance |
+| **Threshold tuning** | PR curve + ROI table across all thresholds |
+| **CFO reports** | PDF memo + 5-slide PPTX deck auto-generated |
+| **Schema alignment** | Inference-time feature drift handled automatically |
+| **Model versioning** | `models/metadata.json` saved on every run |
 
 ---
+
+## Engineered Features
+
+Beyond the raw Telco dataset columns, four high-signal features are added:
+
+| Feature | Formula | Why |
+|---|---|---|
+| `service_count` | sum of active add-on services | More services → higher switching cost |
+| `charge_per_service` | MonthlyCharges / (service_count+1) | Detects overpriced bundles |
+| `avg_monthly_spend` | TotalCharges / (tenure+1) | Normalises spend trajectory |
+| `is_new_customer` | tenure ≤ 3 months | Highest churn-risk window |
+
+---
+
+## Tech Stack
+
+`XGBoost` · `scikit-learn` · `Streamlit` · `Plotly` · `SHAP` · `Optuna` · `ReportLab` · `python-pptx` · `Docker`

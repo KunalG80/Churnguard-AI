@@ -1,0 +1,2 @@
+fonts-dejavu-core
+libfreetype6-dev
